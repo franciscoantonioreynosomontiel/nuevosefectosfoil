@@ -1,0 +1,70 @@
+---
+const { initialMessage = 'Tilt me!' }: Record<string, any> = Astro.props;
+---
+
+<section>
+  <hover-tilt tilt-factor="1.5" scale-factor="1.1" container-class="rounded-xl">
+    <div class="card not-content">
+      <h2 id="webc-message">{initialMessage}</h2>
+    </div>
+  </hover-tilt>
+
+  <input id="webc-message-input" value={initialMessage} placeholder="Type a message..." />
+</section>
+
+<script>
+  if (typeof window !== 'undefined') {
+    const input = document.getElementById('webc-message-input');
+    const heading = document.getElementById('webc-message');
+
+    if (input && heading) {
+      input.addEventListener('input', (event) => {
+        heading.textContent = event.target.value;
+      });
+    }
+  }
+</script>
+
+<style>
+  section {
+    display: grid;
+    gap: 2rem;
+  }
+
+  .card {
+    display: flex;
+    flex-direction: column;
+    place-content: center;
+    max-width: 400px;
+    aspect-ratio: 1.8;
+    padding: 2rem;
+    color: white;
+    background: linear-gradient(135deg, #fd746c, #ff9068);
+  }
+
+  input {
+    margin-top: 1rem;
+    appearance: none;
+    color: rgb(41, 47, 61);
+    background: hsl(222, 20%, 100%);
+    padding: 0.875em;
+    border-radius: 0.5rem;
+    border: 1px solid transparent;
+    outline: 1px solid transparent;
+    accent-color: hsl(200, 85%, 60%);
+    box-shadow: 0 3px 2px -3px hsl(222, 20%, 85%);
+    transition:
+      border 0.3s ease-in,
+      outline 0.6s ease-in,
+      box-shadow 0.6s ease-in;
+  }
+
+  input:focus {
+    border-color: hsl(160, 85%, 60%);
+    outline-color: hsl(200, 85%, 60%);
+    transition:
+      border 0.6s ease-out,
+      outline 0.3s ease-out,
+      box-shadow 0.3s ease-out;
+  }
+</style>

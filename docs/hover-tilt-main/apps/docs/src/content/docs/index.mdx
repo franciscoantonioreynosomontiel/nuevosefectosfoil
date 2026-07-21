@@ -1,0 +1,68 @@
+---
+title: Hover Tilt
+description: A simple, beautiful tilt & glare component, available as both a Svelte Component and Web Component
+template: splash
+hero:
+  tagline: Add smooth tilt & glare effects to your website
+  actions:
+    - text: Get Started
+      link: /getting-started/
+      icon: right-arrow
+      variant: primary
+    - text: Documentation
+      link: /options/props/
+      icon: document
+      variant: minimal
+---
+
+import { CardGrid } from '@astrojs/starlight/components';
+import IndexCard from '@components/astro/IndexCard.astro';
+import BasicDemo from '@components/demos/BasicDemo.svelte';
+
+<div class="py-10 text-center text-balance md:px-10 md:py-0 md:text-left">
+
+### Easy to use, and powerful.
+
+Import as a **Svelte5 component**, or as **a Web Component**. &nbsp;&nbsp; [Learn how &rarr;](/getting-started/)
+
+</div>
+
+<div class="px-6 md:py-10 -mx-4 overflow-hidden">
+	<CardGrid stagger>
+
+    	<BasicDemo client:only="svelte" gradientColor1="#dc8754" gradientColor2="#ff3e00" >
+    		<IndexCard title="Svelte 5 Component" icon="seti:svelte" iconColor="#ff3e00" url="/getting-started/#usage">
+    			**Svelte 5 Component** with full **TypeScript support** and slotted content!
+    		</IndexCard>
+    	</BasicDemo>
+
+    	<BasicDemo client:only="svelte" >
+    		<IndexCard title="Web Component" icon="seti:html" iconColor="#667eea" url="/getting-started/#usage">
+    			Use it in **any framework** or vanilla HTML with the **Web Components** API!
+    		</IndexCard>
+    	</BasicDemo>
+
+    	<BasicDemo client:only="svelte" gradientColor1="rgb(132, 221, 93)" gradientColor2="rgb(75, 162, 162)" >
+    		<IndexCard title="Spring Animations" icon="star" iconColor="rgb(132, 221, 93)" url="/examples/usage/#spring-animations">
+    			**Smooth**, customizable physics-based **animations** allow you to create the exact effect you want!
+    		</IndexCard>
+    	</BasicDemo>
+
+    	<BasicDemo client:only="svelte" gradientColor1="rgb(86, 219, 219)" gradientColor2="rgb(0, 100, 255)" >
+    		<IndexCard title="Highly Customizable" icon="setting" iconColor="rgb(86, 219, 219)" url="/bespoke/credit-cards/">
+    			Extensive props for **tilt**, **scale**, **glare**, **shadow**, and **animation** control. Even
+    			allows a custom mask and blend-mode!
+    		</IndexCard>
+    	</BasicDemo>
+
+    </CardGrid>
+
+</div>
+
+<div class="text-center max-w-150 mx-auto supports-[text-wrap:pretty]:text-pretty not-supports-[text-wrap:pretty]:text-balance">
+	## Built with Experience
+
+    Born from the same magic as the popular [Pokemon Holo Effects](https://poke-holo.simey.me) by [@simeydotme](https://github.com/simeydotme),
+    this component delivers the same concepts with **better performance** and **zero complexity** by default.
+
+</div>
