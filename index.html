@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="es" class="h-full bg-slate-900 text-slate-100">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hover-Tilt Foil Effects Playground</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome for Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Svelte/WebComponent HoverTilt Library -->
+  <script type="module" src="js/hover-tilt.js"></script>
+  <style>
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #1e293b;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #475569;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #64748b;
+    }
+
+    pre {
+      scrollbar-width: thin;
+    }
+  </style>
+</head>
+<body class="h-full flex flex-col overflow-hidden select-none">
+
+  <!-- Header -->
+  <header class="bg-slate-950 border-b border-slate-800 px-6 py-4 flex items-center justify-between shrink-0">
+    <div class="flex items-center gap-3">
+      <img src="hover-tilt.svg" alt="HoverTilt Logo" class="h-8 w-8 text-indigo-500">
+      <div>
+        <h1 class="text-xl font-extrabold tracking-tight bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
+          Foil & Tilt Studio
+        </h1>
+        <p class="text-xs text-slate-400">Visor interactivo y generador de código listo para copiar y pegar</p>
+      </div>
+    </div>
+    <div class="flex items-center gap-4">
+      <span class="text-xs bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 px-3 py-1 rounded-full font-medium">
+        v1.0.0 Stable
+      </span>
+    </div>
+  </header>
+
+  <!-- Main Workspace -->
+  <main class="flex-1 flex overflow-hidden">
+
+    <!-- Sidebar - Selector de Efectos -->
+    <aside class="w-80 bg-slate-950 border-r border-slate-800 flex flex-col shrink-0">
+      <div class="p-4 border-b border-slate-800">
+        <h2 class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Efectos de cartas predefinidos</h2>
+      </div>
+      <div class="flex-1 overflow-y-auto p-4 space-y-2.5" id="effects-list">
+        <!-- Los botones de efectos se cargarán dinámicamente -->
+      </div>
+    </aside>
+
+    <!-- Center Section - Visor de Cartas y Ajustes -->
+    <section class="flex-1 flex flex-col bg-slate-900 overflow-hidden relative">
+
+      <!-- Interactive Viewer Workspace -->
+      <div class="flex-1 flex items-center justify-center p-8 overflow-auto" id="viewer-workspace">
+        <div class="relative flex flex-col items-center justify-center" id="card-container">
+          <!-- El componente hover-tilt interactivo se inyectará aquí de manera dinámica -->
+        </div>
+      </div>
+
+      <!-- Live Customizer / Atributos del componente -->
+      <div class="bg-slate-950/90 backdrop-blur border-t border-slate-800 p-6 shrink-0">
+        <h3 class="text-sm font-semibold text-slate-300 mb-4 flex items-center gap-2">
+          <i class="fa-solid fa-sliders text-indigo-400"></i> Ajustar parámetros en tiempo real
+        </h3>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-4" id="customizer-controls">
+          <!-- Controles interactivos se autogenerarán -->
+        </div>
+      </div>
+    </section>
+
+    <!-- Right Sidebar - Copy & Paste Code Integration -->
+    <aside class="w-96 bg-slate-950 border-l border-slate-800 flex flex-col shrink-0 overflow-hidden">
+      <!-- Tabs header -->
+      <div class="flex border-b border-slate-800 bg-slate-950 shrink-0">
+        <button id="tab-html" class="flex-1 py-3 text-center text-xs font-bold border-b-2 border-indigo-500 text-indigo-400 transition-all uppercase tracking-wider">
+          HTML
+        </button>
+        <button id="tab-css" class="flex-1 py-3 text-center text-xs font-bold border-b-2 border-transparent text-slate-400 hover:text-slate-300 transition-all uppercase tracking-wider">
+          CSS
+        </button>
+        <button id="tab-js" class="flex-1 py-3 text-center text-xs font-bold border-b-2 border-transparent text-slate-400 hover:text-slate-300 transition-all uppercase tracking-wider">
+          JS
+        </button>
+      </div>
+
+      <!-- Tab Content: Codes to copy -->
+      <div class="flex-1 overflow-y-auto p-4 bg-slate-950/40 relative flex flex-col">
+        <!-- Code block container -->
+        <div class="flex-1 flex flex-col min-h-0">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs text-slate-500 uppercase tracking-wider font-mono" id="code-lang-label">HTML (Estructura)</span>
+            <button id="btn-copy" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white px-3 py-1.5 rounded-md flex items-center gap-2 transition-all font-medium">
+              <i class="fa-regular fa-copy"></i> Copiar Código
+            </button>
+          </div>
+
+          <div class="flex-1 min-h-0 bg-slate-900 border border-slate-800 rounded-lg p-4 overflow-auto relative">
+            <pre class="text-xs font-mono text-slate-300 whitespace-pre leading-relaxed select-all" id="code-display">Cargando...</pre>
+          </div>
+        </div>
+      </div>
+
+      <!-- Help Integration Alert -->
+      <div class="p-4 bg-indigo-950/20 border-t border-slate-800 shrink-0 text-xs text-slate-400 leading-relaxed">
+        <p class="flex gap-2">
+          <i class="fa-solid fa-circle-info text-indigo-400 text-sm shrink-0"></i>
+          <span><strong>¿Cómo integrarlo?</strong> Copia el HTML, el CSS para configurar el foil/brillo y asegúrate de cargar la librería JS que define el componente <code>&lt;hover-tilt&gt;</code> en tu proyecto.</span>
+        </p>
+      </div>
+    </aside>
+
+  </main>
+
+  <!-- Inject custom styles for selected effect dynamically -->
+  <style id="dynamic-effect-styles"></style>
+
+  <script>
+    // Configuración completa de cada efecto con sus datos, atributos HTML, y estilos CSS específicos
+    const effectsData = [
+      {
+        id: "basic-pokemon",
+        name: "Pokémon Básico (Clefairy)",
+        description: "Inclinación básica sin efectos holográficos adicionales.",
+        image: "pokemon/sv3-5_en_035_std.webp",
+        rounded: "rounded-[4.55%/3.5%]",
+        attributes: {
+          shadow: "",
+          "scale-factor": "1.05",
+          "tilt-factor": "1"
+        },
+        css: ""
+      },
+      {
+        id: "ex-holo",
+        name: "Clefairy ex Holo (Brillo Estrellas)",
+        description: "Brillo de fondo holográfico clásico con patrón de estrellas calcado con diferencia de luz.",
+        image: "pokemon/sv9_en_056_std.webp",
+        rounded: "rounded-[4.55%/3.5%]",
+        attributes: {
+          shadow: "",
+          "scale-factor": "1.1",
+          "glare-mask": "url(pokemon/sv9_en_056_std.foil.webp)",
+          "glare-mask-mode": "luminance",
+          "glare-intensity": "1.5",
+          "blend-mode": "hard-light"
+        },
+        css: `.ex-holo::part(tilt)::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background-image:
+    url(https://poke-holo.b-cdn.net/foils/151/birthday-holo-dank-2.webp), var(--hover-tilt-default-gradient);
+  background-size:
+    120% 160%,
+    cover;
+  background-position:
+    calc(50% + var(--hover-tilt-x, 0) * 5px) calc(50% + var(--hover-tilt-y, 0) * 5px),
+    center;
+  background-repeat: no-repeat;
+  background-blend-mode: color-burn;
+  mix-blend-mode: soft-light;
+  opacity: calc(var(--hover-tilt-opacity, 0) * 0.75);
+  will-change: background-image, opacity;
+}`
+      },
+      {
+        id: "foil-full-art",
+        name: "Foil Full-Art (Lillie)",
+        description: "Efecto foil de pantalla completa usando una máscara de brillo basada en la luminancia.",
+        image: "pokemon/me1_en_169_std.webp",
+        rounded: "rounded-[4.55%/3.5%]",
+        attributes: {
+          shadow: "",
+          "scale-factor": "1.1",
+          "glare-mask": "url(pokemon/me1_en_169_std.foil.webp)",
+          "glare-mask-mode": "luminance",
+          "glare-intensity": "2",
+          "blend-mode": "hard-light"
+        },
+        css: ""
+      },
+      {
+        id: "reverse-holo-clefairy",
+        name: "Reverse Holo (Clefairy Shiny)",
+        description: "Fondo holográfico inverso con mezcla en modo luminosidad de alta intensidad.",
+        image: "pokemon/sv3-5_en_035_std.webp",
+        rounded: "rounded-[4.55%/3.5%]",
+        attributes: {
+          shadow: "",
+          "glare-mask": "url(pokemon/sv3-5_en_035_ph.foil.webp)",
+          "glare-mask-mode": "luminance",
+          "glare-intensity": "4",
+          "blend-mode": "luminosity"
+        },
+        css: ""
+      },
+      {
+        id: "reverse-masterball",
+        name: "Masterball Holo (Eevee)",
+        description: "Mezcla de dos máscaras cruzadas para recrear el patrón reflectante de la Masterball.",
+        image: "pokemon/sv8-5_en_074_std.webp",
+        rounded: "rounded-[4.55%/3.5%]",
+        attributes: {
+          shadow: "",
+          "shadow-blur": "60",
+          "scale-factor": "1.15",
+          "glare-mask": "url(pokemon/sv8-5_en_074_mph.etch.png), url(pokemon/sv8-5_en_074_mph.foil.webp)",
+          "glare-mask-mode": "luminance",
+          "glare-intensity": "4",
+          "glare-mask-composite": "intersect",
+          "blend-mode": "luminosity"
+        },
+        css: ""
+      },
+      {
+        id: "reverse-ball-etch-umbreon",
+        name: "Texturado Masterball (Umbreon)",
+        description: "Recreación exacta del patrón texturizado con relieve y brillos realistas metálicos.",
+        image: "pokemon/sv8-5_en_059_std.webp",
+        rounded: "rounded-[4.55%/3.5%]",
+        attributes: {
+          shadow: "",
+          "shadow-blur": "30",
+          "scale-factor": "1.15",
+          "glare-mask": "url(pokemon/sv8-5_en_059_mph.foil.webp)",
+          "glare-mask-mode": "luminance",
+          "glare-mask-composite": "intersect",
+          "blend-mode": "hard-light",
+          style: "--hover-tilt-etch-image: url(pokemon/sv8-5_en_059_mph.etch.webp);"
+        },
+        css: `/* Creamos un degradado customizado para capas de brillo/relieve */
+.reverse-ball-etch-umbreon::part(container) {
+  --hover-tilt-custom-gradient: radial-gradient(
+    farthest-corner circle at var(--gradient-x) var(--gradient-y),
+    rgb(237 237 245) 8%,
+    rgb(13 13 18) 90%
+  );
+}
+
+/* Capa interna para el relieve texturizado */
+.reverse-ball-etch {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  mix-blend-mode: overlay;
+  opacity: calc(var(--hover-tilt-opacity, 0) * 0.75);
+  will-change: opacity;
+}
+
+.reverse-ball-etch::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background-image: var(--hover-tilt-etch-image), var(--hover-tilt-custom-gradient);
+  background-size: cover, cover;
+  background-position: center, center;
+  background-repeat: no-repeat, no-repeat;
+  background-blend-mode: difference;
+  mask-image: var(--hover-tilt-custom-gradient);
+  mask-size: cover;
+  mask-position: center;
+  mask-repeat: no-repeat;
+  mask-mode: var(--hover-tilt-glare-mask-mode);
+  will-change: background-image, mask-image, opacity;
+}`,
+        extraHTML: `<div class="reverse-ball-etch"></div>`
+      },
+      {
+        id: "sparkles-lillie",
+        name: "Lillie Special (Chispas Arcoíris)",
+        description: "Brillo psicodélico de chispas en arcoíris usando múltiples patrones de mezcla en CSS.",
+        image: "pokemon/sv9_en_184_std.webp",
+        rounded: "rounded-[4.55%/3.5%]",
+        attributes: {
+          shadow: "",
+          "scale-factor": "1.15",
+          "glare-mask": "url(pokemon/sv9_en_184_std.foil.webp)",
+          "glare-mask-mode": "luminance",
+          "glare-intensity": "3",
+          "blend-mode": "hard-light"
+        },
+        css: `.sparkles-lillie::part(tilt)::before {
+  --sparkle-rainbow-gradient: linear-gradient(to top left, #f9b3eb, #e2a6fc, #88a2f8, #a2f5a9 90%);
+  --sparkles-image: url(pokemon/sparkles.webp);
+  --sparkles-offset: calc(50% + var(--hover-tilt-x, 0) * 1.5px) calc(50% + var(--hover-tilt-y, 0) * 1.5px);
+  background-image: var(--sparkle-rainbow-gradient), var(--sparkles-image), var(--hover-tilt-default-gradient);
+  background-size:
+    cover,
+    200px 200px,
+    cover;
+  background-position: center, var(--sparkles-offset), center;
+  background-repeat: no-repeat, repeat, no-repeat;
+  background-blend-mode: color-burn, color-dodge;
+  opacity: calc(var(--hover-tilt-opacity, 0) * 0.6);
+  will-change: background-image, background-position, opacity;
+}`
+      },
+      {
+        id: "amex-platinum",
+        name: "Tarjeta Amex Platinum",
+        description: "Inclinación fotorrealista sobre tarjeta de crédito premium Amex Platinum.",
+        image: "amex-platinum.webp",
+        rounded: "rounded-[4%/6%]",
+        attributes: {
+          shadow: "",
+          "shadow-blur": "30",
+          "scale-factor": "1.1",
+          "glare-intensity": "3"
+        },
+        css: ""
+      },
+      {
+        id: "amex-pattern-foil",
+        name: "Amex Holographic",
+        description: "Efecto foil selectivo usando una máscara de patrón de Amex que brilla en arcoíris.",
+        image: "amex.webp",
+        rounded: "rounded-[4%/6%]",
+        attributes: {
+          shadow: "",
+          "shadow-blur": "30",
+          "scale-factor": "1.12",
+          "glare-intensity": "1",
+          "blend-mode": "hard-light",
+          "glare-mask": "url(amex-pattern.webp)",
+          "glare-mask-mode": "alpha",
+          "glare-mask-composite": "intersect"
+        },
+        css: `.amex-pattern-foil::part(tilt)::before {
+  clip-path: polygon(
+    5.5% 7.5%,
+    5.5% 95%,
+    11% 95%,
+    11% 32%,
+    26% 32%,
+    26% 52%,
+    11% 52%,
+    11% 95%,
+    94.5% 95%,
+    94.5% 7.5%
+  );
+}
+
+.amex-pattern-foil::part(tilt)::before {
+  mask-image: var(--hover-tilt-glare-mask), var(--hover-tilt-default-gradient);
+  background-image: linear-gradient(to top left, #f9b3eb, #e2a6fc, #88a2f8, #a2f5a9 90%);
+  background-size: 300% 300%;
+  background-position: var(--gradient-x) var(--gradient-y);
+}
+
+.amex-pattern-foil::part(tilt)::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image: var(--hover-tilt-default-gradient);
+  mix-blend-mode: hard-light;
+  opacity: calc(var(--hover-tilt-opacity, 0) - 0.75);
+  will-change: opacity, background-image;
+}`
+      }
+    ];
+
+    // Variables de Estado
+    let currentEffect = effectsData[0];
+    let currentTab = 'html';
+    let activeAttributes = { ...currentEffect.attributes };
+
+    // Elementos del DOM
+    const elEffectsList = document.getElementById('effects-list');
+    const elCardContainer = document.getElementById('card-container');
+    const elCustomizerControls = document.getElementById('customizer-controls');
+    const elCodeDisplay = document.getElementById('code-display');
+    const elCodeLangLabel = document.getElementById('code-lang-label');
+    const elDynamicStyles = document.getElementById('dynamic-effect-styles');
+
+    const tabHTML = document.getElementById('tab-html');
+    const tabCSS = document.getElementById('tab-css');
+    const tabJS = document.getElementById('tab-js');
+    const btnCopy = document.getElementById('btn-copy');
+
+    // Inicializar la interfaz de usuario
+    function init() {
+      renderEffectsMenu();
+      selectEffect(effectsData[0].id);
+      setupTabs();
+      setupCopyButton();
+    }
+
+    // Renderizar menú lateral de efectos
+    function renderEffectsMenu() {
+      elEffectsList.innerHTML = '';
+      effectsData.forEach(eff => {
+        const btn = document.createElement('button');
+        btn.className = `w-full text-left p-3 rounded-xl border text-sm transition-all flex items-start gap-3 hover:bg-slate-800/60 ${
+          eff.id === currentEffect.id
+            ? 'bg-indigo-600/10 border-indigo-500/50 text-white shadow-lg shadow-indigo-500/5'
+            : 'bg-slate-900/40 border-slate-800/80 text-slate-400 hover:border-slate-700/80'
+        }`;
+
+        btn.innerHTML = `
+          <div class="flex-1">
+            <div class="font-bold text-slate-200">${eff.name}</div>
+            <div class="text-xs text-slate-400 mt-1 leading-snug">${eff.description}</div>
+          </div>
+        `;
+        btn.addEventListener('click', () => selectEffect(eff.id));
+        elEffectsList.appendChild(btn);
+      });
+    }
+
+    // Seleccionar un efecto
+    function selectEffect(id) {
+      currentEffect = effectsData.find(e => e.id === id);
+      activeAttributes = { ...currentEffect.attributes };
+
+      // Actualizar estilos activos en el menú
+      renderEffectsMenu();
+
+      // Regenerar visor
+      updateViewer();
+
+      // Regenerar controles customizadores
+      renderCustomizerControls();
+
+      // Actualizar código en pantalla
+      updateCodeDisplay();
+    }
+
+    // Renderizar los controles del Playground / Customizador interactivo
+    function renderCustomizerControls() {
+      elCustomizerControls.innerHTML = '';
+
+      // Definir parámetros a customizar
+      const controlsConfig = [
+        { key: 'scale-factor', label: 'Escala (Hover)', type: 'range', min: '1', max: '1.5', step: '0.05', default: '1.1' },
+        { key: 'glare-intensity', label: 'Intensidad Brillo', type: 'range', min: '0.5', max: '5', step: '0.5', default: '1' },
+        { key: 'glare-hue', label: 'Matiz de Brillo (Hue)', type: 'range', min: '0', max: '360', step: '10', default: '270' },
+        { key: 'blend-mode', label: 'Modo Mezcla', type: 'select', options: ['overlay', 'hard-light', 'soft-light', 'difference', 'luminosity', 'color-dodge', 'color-burn'], default: 'overlay' }
+      ];
+
+      controlsConfig.forEach(cfg => {
+        const value = activeAttributes[cfg.key] !== undefined ? activeAttributes[cfg.key] : cfg.default;
+
+        const wrapper = document.createElement('div');
+        wrapper.className = 'flex flex-col gap-1.5';
+
+        const labelContainer = document.createElement('div');
+        labelContainer.className = 'flex justify-between items-center text-xs font-semibold text-slate-400';
+        labelContainer.innerHTML = `<span>${cfg.label}</span><span class="text-indigo-400 font-mono" id="val-${cfg.key}">${value}</span>`;
+        wrapper.appendChild(labelContainer);
+
+        if (cfg.type === 'range') {
+          const input = document.createElement('input');
+          input.type = 'range';
+          input.min = cfg.min;
+          input.max = cfg.max;
+          input.step = cfg.step;
+          input.value = value;
+          input.className = 'w-full accent-indigo-500 bg-slate-800 h-1 rounded-lg cursor-pointer';
+          input.addEventListener('input', (e) => {
+            const val = e.target.value;
+            document.getElementById(`val-${cfg.key}`).innerText = val;
+            updateAttribute(cfg.key, val);
+          });
+          wrapper.appendChild(input);
+        } else if (cfg.type === 'select') {
+          const select = document.createElement('select');
+          select.className = 'w-full bg-slate-800 border border-slate-700/80 text-xs rounded-lg px-2 py-1.5 focus:outline-none focus:border-indigo-500 font-mono text-slate-200';
+          cfg.options.forEach(opt => {
+            const option = document.createElement('option');
+            option.value = opt;
+            option.text = opt;
+            if (opt === value) option.selected = true;
+            select.appendChild(option);
+          });
+          select.addEventListener('change', (e) => {
+            const val = e.target.value;
+            document.getElementById(`val-${cfg.key}`).innerText = val;
+            updateAttribute(cfg.key, val);
+          });
+          wrapper.appendChild(select);
+        }
+
+        elCustomizerControls.appendChild(wrapper);
+      });
+    }
+
+    // Actualizar atributos sobre la marcha
+    function updateAttribute(key, value) {
+      activeAttributes[key] = value;
+      const hoverTiltEl = document.querySelector('hover-tilt');
+      if (hoverTiltEl) {
+        if (value === null || value === undefined || value === '') {
+          hoverTiltEl.removeAttribute(key);
+        } else {
+          hoverTiltEl.setAttribute(key, value);
+        }
+      }
+      updateCodeDisplay();
+    }
+
+    // Reconstruir el Visor de Cartas interactivo
+    function updateViewer() {
+      // Remover estilo anterior e inyectar nuevo CSS customizado para el efecto
+      let parsedCSS = currentEffect.css;
+      if (currentEffect.id === 'reverse-ball-etch-umbreon') {
+        parsedCSS = currentEffect.css.replace('.reverse-ball-etch-umbreon', `.${currentEffect.id}`);
+      } else if (currentEffect.id === 'ex-holo') {
+        parsedCSS = currentEffect.css.replace('.ex-holo', `.${currentEffect.id}`);
+      } else if (currentEffect.id === 'sparkles-lillie') {
+        parsedCSS = currentEffect.css.replace('.sparkles-lillie', `.${currentEffect.id}`);
+      } else if (currentEffect.id === 'amex-pattern-foil') {
+        parsedCSS = currentEffect.css.replace('.amex-pattern-foil', `.${currentEffect.id}`);
+      }
+      elDynamicStyles.innerHTML = parsedCSS;
+
+      // Crear elemento hover-tilt
+      const hoverTilt = document.createElement('hover-tilt');
+      hoverTilt.className = `${currentEffect.id} [&::part(container)]:${currentEffect.rounded} max-w-xs md:max-w-sm block w-[280px] h-auto`;
+
+      // Aplicar atributos interactivos
+      Object.entries(activeAttributes).forEach(([k, v]) => {
+        if (v !== "") {
+          hoverTilt.setAttribute(k, v);
+        } else {
+          hoverTilt.setAttribute(k, "");
+        }
+      });
+
+      // Añadir imagen interna
+      const img = document.createElement('img');
+      img.src = currentEffect.image;
+      img.alt = currentEffect.name;
+      img.className = `${currentEffect.rounded} w-full block h-auto select-none pointer-events-none shadow-2xl`;
+      img.loading = "lazy";
+      hoverTilt.appendChild(img);
+
+      // Si tiene HTML adicional (como la capa de grabado para texturas)
+      if (currentEffect.extraHTML) {
+        const dummy = document.createElement('div');
+        dummy.innerHTML = currentEffect.extraHTML;
+        hoverTilt.appendChild(dummy.firstElementChild);
+      }
+
+      // Reemplazar visor viejo por el nuevo
+      elCardContainer.innerHTML = '';
+      elCardContainer.appendChild(hoverTilt);
+    }
+
+    // Generar bloque de código dinámico
+    function updateCodeDisplay() {
+      if (currentTab === 'html') {
+        elCodeLangLabel.innerText = "HTML (Estructura)";
+
+        // Construir string de atributos
+        const attrsString = Object.entries(activeAttributes)
+          .map(([k, v]) => v !== "" ? `${k}="${v}"` : k)
+          .join('\n  ');
+
+        const extraChild = currentEffect.extraHTML ? `\n  ${currentEffect.extraHTML}` : '';
+
+        const code = `<!-- Componente Web HoverTilt -->
+<hover-tilt
+  class="${currentEffect.id}"
+  ${attrsString}
+>
+  <img
+    src="${currentEffect.image}"
+    alt="${currentEffect.name}"
+  />${extraChild}
+</hover-tilt>`;
+        elCodeDisplay.innerText = code;
+
+      } else if (currentTab === 'css') {
+        elCodeLangLabel.innerText = "CSS (Foil & Efectos)";
+        if (currentEffect.css) {
+          elCodeDisplay.innerText = currentEffect.css;
+        } else {
+          elCodeDisplay.innerText = `/* El efecto "${currentEffect.name}" no requiere CSS adicional. */
+/* Utiliza únicamente las propiedades y atributos nativos del componente. */`;
+        }
+      } else if (currentTab === 'js') {
+        elCodeLangLabel.innerText = "JS (Instalación de Librería)";
+        elCodeDisplay.innerText = `<!-- Inserta este script en tu cabecera o antes del cierre de body -->
+<script type="module" src="js/hover-tilt.js"><\/script>
+
+<!--
+  ¡Listo! La librería define de forma nativa el custom element <hover-tilt>.
+  No necesitas escribir JS adicional para inicializar la animación.
+-->`;
+      }
+    }
+
+    // Configuración de pestañas del panel derecho
+    function setupTabs() {
+      const tabs = [
+        { btn: tabHTML, name: 'html' },
+        { btn: tabCSS, name: 'css' },
+        { btn: tabJS, name: 'js' }
+      ];
+
+      tabs.forEach(t => {
+        t.btn.addEventListener('click', () => {
+          tabs.forEach(item => {
+            item.btn.classList.remove('border-indigo-500', 'text-indigo-400');
+            item.btn.classList.add('border-transparent', 'text-slate-400');
+          });
+          t.btn.classList.remove('border-transparent', 'text-slate-400');
+          t.btn.classList.add('border-indigo-500', 'text-indigo-400');
+          currentTab = t.name;
+          updateCodeDisplay();
+        });
+      });
+    }
+
+    // Configuración de funcionalidad Copiar Código
+    function setupCopyButton() {
+      btnCopy.addEventListener('click', () => {
+        const codeText = elCodeDisplay.innerText;
+        navigator.clipboard.writeText(codeText).then(() => {
+          const originalHTML = btnCopy.innerHTML;
+          btnCopy.innerHTML = `<i class="fa-solid fa-check text-emerald-400"></i> ¡Copiado!`;
+          btnCopy.classList.add('bg-emerald-950/25', 'border', 'border-emerald-500/30', 'text-emerald-300');
+
+          setTimeout(() => {
+            btnCopy.innerHTML = originalHTML;
+            btnCopy.className = "text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white px-3 py-1.5 rounded-md flex items-center gap-2 transition-all font-medium";
+          }, 2000);
+        }).catch(err => {
+          console.error('No se pudo copiar el código: ', err);
+        });
+      });
+    }
+
+    // Lanzar inicio de app
+    window.addEventListener('DOMContentLoaded', init);
+  </script>
+</body>
+</html>
