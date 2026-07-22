@@ -1,0 +1,144 @@
+========================================================================
+     CÓDIGOS LISTOS PARA PEGAR (UMBREON MASTERBALL & LILLIE SPECIAL)
+========================================================================
+
+Este archivo contiene el código HTML y CSS exacto necesario para replicar las dos cartas con efectos holográficos avanzados en tu propio proyecto.
+
+Asegúrate de tener la siguiente estructura de archivos en tu proyecto:
+mi-proyecto/
+├── index.html
+├── js/
+│   └── hover-tilt.js      (Copia este archivo desde pack-cartas-efectos/js/)
+└── pokemon/
+    ├── sparkles.webp
+    ├── sv8-5_en_059_mph.etch.webp
+    ├── sv8-5_en_059_mph.foil.webp
+    ├── sv8-5_en_059_std.webp
+    ├── sv9_en_184_std.foil.webp
+    └── sv9_en_184_std.webp (Copia estas imágenes desde pack-cartas-efectos/pokemon/)
+
+------------------------------------------------------------------------
+1. ENLACE GLOBAL EN TU CABECERA (INDEX.HTML)
+------------------------------------------------------------------------
+Asegúrate de agregar este script en tu archivo HTML (en el <head> o antes de cerrar el <body>):
+
+<script type="module" src="js/hover-tilt.js"></script>
+
+
+------------------------------------------------------------------------
+2. CARTA 1: TEXTURADO MASTERBALL (UMBREON)
+------------------------------------------------------------------------
+
+A) HTML:
+   Copia y pega este elemento en tu HTML donde quieras colocar la carta de Umbreon:
+
+<!-- Componente Web HoverTilt para Umbreon Masterball -->
+<hover-tilt
+  class="reverse-ball-etch-umbreon [&::part(container)]:rounded-[4.55%/3.5%] max-w-xs md:max-w-sm block w-[280px] h-auto"
+  shadow=""
+  shadow-blur="30"
+  scale-factor="1.15"
+  glare-mask="url(pokemon/sv8-5_en_059_mph.foil.webp)"
+  glare-mask-mode="luminance"
+  glare-mask-composite="intersect"
+  blend-mode="hard-light"
+  style="--hover-tilt-etch-image: url(pokemon/sv8-5_en_059_mph.etch.webp);"
+>
+  <img
+    src="pokemon/sv8-5_en_059_std.webp"
+    alt="Texturado Masterball (Umbreon)"
+    class="rounded-[4.55%/3.5%] w-full block h-auto select-none pointer-events-none shadow-2xl"
+    loading="lazy"
+  />
+  <div class="reverse-ball-etch"></div>
+</hover-tilt>
+
+
+B) CSS:
+   Añade este código a tus estilos CSS de la página para activar la textura y el relieve Masterball:
+
+/* Creamos un degradado customizado para capas de brillo/relieve de Umbreon */
+.reverse-ball-etch-umbreon::part(container) {
+  --hover-tilt-custom-gradient: radial-gradient(
+    farthest-corner circle at var(--gradient-x) var(--gradient-y),
+    rgb(237 237 245) 8%,
+    rgb(13 13 18) 90%
+  );
+}
+
+/* Capa interna para el relieve texturizado */
+.reverse-ball-etch {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  mix-blend-mode: overlay;
+  opacity: calc(var(--hover-tilt-opacity, 0) * 0.75);
+  will-change: opacity;
+}
+
+.reverse-ball-etch::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background-image: var(--hover-tilt-etch-image), var(--hover-tilt-custom-gradient);
+  background-size: cover, cover;
+  background-position: center, center;
+  background-repeat: no-repeat, no-repeat;
+  background-blend-mode: difference;
+  mask-image: var(--hover-tilt-custom-gradient);
+  mask-size: cover;
+  mask-position: center;
+  mask-repeat: no-repeat;
+  mask-mode: var(--hover-tilt-glare-mask-mode);
+  will-change: background-image, mask-image, opacity;
+}
+
+
+------------------------------------------------------------------------
+3. CARTA 2: LILLIE SPECIAL (CHISPAS ARCOÍRIS)
+------------------------------------------------------------------------
+
+A) HTML:
+   Copia y pega este elemento en tu HTML donde quieras colocar la carta de Lillie:
+
+<!-- Componente Web HoverTilt para Lillie Special -->
+<hover-tilt
+  class="sparkles-lillie [&::part(container)]:rounded-[4.55%/3.5%] max-w-xs md:max-w-sm block w-[280px] h-auto"
+  shadow=""
+  scale-factor="1.15"
+  glare-mask="url(pokemon/sv9_en_184_std.foil.webp)"
+  glare-mask-mode="luminance"
+  glare-intensity="3"
+  blend-mode="hard-light"
+>
+  <img
+    src="pokemon/sv9_en_184_std.webp"
+    alt="Lillie Special (Chispas Arcoíris)"
+    class="rounded-[4.55%/3.5%] w-full block h-auto select-none pointer-events-none shadow-2xl"
+    loading="lazy"
+  />
+</hover-tilt>
+
+
+B) CSS:
+   Añade este código a tus estilos CSS de la página para el efecto psicodélico de chispas arcoíris:
+
+.sparkles-lillie::part(tilt)::before {
+  --sparkle-rainbow-gradient: linear-gradient(to top left, #f9b3eb, #e2a6fc, #88a2f8, #a2f5a9 90%);
+  --sparkles-image: url(pokemon/sparkles.webp);
+  --sparkles-offset: calc(50% + var(--hover-tilt-x, 0) * 1.5px) calc(50% + var(--hover-tilt-y, 0) * 1.5px);
+  background-image: var(--sparkle-rainbow-gradient), var(--sparkles-image), var(--hover-tilt-default-gradient);
+  background-size:
+    cover,
+    200px 200px,
+    cover;
+  background-position: center, var(--sparkles-offset), center;
+  background-repeat: no-repeat, repeat, no-repeat;
+  background-blend-mode: color-burn, color-dodge;
+  opacity: calc(var(--hover-tilt-opacity, 0) * 0.6);
+  will-change: background-image, background-position, opacity;
+}
+
+========================================================================
