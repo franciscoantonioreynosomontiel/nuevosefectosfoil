@@ -1,0 +1,87 @@
+========================================================================
+    GUÍA DE USO DE HOVER-TILT Y CÓMO CONSEGUIR TEXTURAS / MÁSCARAS
+========================================================================
+
+Hola. En esta guía te explico de forma súper detallada cómo puedes usar la librería "hover-tilt.js" en tu proyecto, cómo configurar el componente nativo <hover-tilt> y, lo más importante, cómo se consiguen o crean las texturas, máscaras y capas de brillo (foil/etch/sparkles) para tus cartas de Pokémon u otros proyectos.
+
+------------------------------------------------------------------------
+1. ¿CÓMO USAR LA LIBRERÍA JS? (INTEGRACIÓN EN TU PROYECTO)
+------------------------------------------------------------------------
+
+La librería está construida como un "Web Component" estándar (utilizando internamente Svelte 5). Esto significa que define una etiqueta HTML nativa personalizada llamada `<hover-tilt>`. No necesitas escribir código JavaScript para inicializar el efecto de inclinación 3D ni los brillos; el componente se encarga de todo de forma automática simplemente colocándolo en tu HTML.
+
+Pasos para integrarlo:
+
+A) Importa el Script en tu HTML:
+   Coloca la siguiente línea dentro de tu etiqueta `<head>` o justo antes del cierre de tu `</body>`:
+
+   <script type="module" src="js/hover-tilt.js"></script>
+
+B) Inserta el elemento en tu HTML:
+   Para una carta estándar, simplemente la rodeas con la etiqueta `<hover-tilt>` y le pasas la imagen adentro:
+
+   <hover-tilt scale-factor="1.05" tilt-factor="1">
+     <img src="tu-carta.png" alt="Carta Pokémon" />
+   </hover-tilt>
+
+Atributos útiles que puedes configurar directamente en la etiqueta HTML:
+* scale-factor: Controla cuánto se amplía/agranda la carta al pasar el mouse por encima (por ejemplo: "1.1").
+* tilt-factor: Controla la intensidad de la inclinación general (por ejemplo: "1.2").
+* shadow: Si se incluye (como atributo vacío), activa sombras dinámicas automáticas basadas en el ángulo del brillo.
+* shadow-blur: Controla la difuminación de la sombra (ej. "30").
+* glare-intensity: Ajusta la fuerza del reflejo o brillo (ej. "2" o "3").
+* glare-hue: Cambia el color del destello/brillo usando grados HSL (de 0 a 360). "270" da un tono morado/fucsia.
+* blend-mode: El modo de mezcla CSS para fusionar el brillo con la imagen. Modos recomendados: "hard-light", "overlay", "luminosity", "color-dodge".
+* glare-mask: La ruta (url) de la máscara que define qué partes de la carta brillan (por ejemplo: `url(ruta/mascara.png)`).
+* glare-mask-mode: Define cómo se lee la máscara ("luminance" para blanco y negro, o "alpha" si tiene transparencia).
+
+---
+
+------------------------------------------------------------------------
+2. ¿CÓMO SE CONSIGUEN LAS TEXTURAS, MÁSCARAS Y CAPAS DE BRILLO?
+------------------------------------------------------------------------
+
+Las espectaculares cartas interactivas que viste en el demo (como Umbreon con patrón Masterball o Lillie con chispas arcoíris) no usan solo la imagen básica de la carta. Utilizan máscaras especiales de brillo (glare-masks) y texturas de relieve (etching).
+
+A continuación te explico cómo y de dónde se obtienen:
+
+MÉTODO A: EXTRAERLAS DE REPOSITORIOS Y BASES DE DATOS PÚBLICAS (Recomendado)
+-------------------------------------------------------------------------
+Muchos desarrolladores y fans de la comunidad de TCG han recopilado y extraído (mediante datamining o escaneos a alta resolución) las capas por separado de los juegos oficiales de Pokémon (como Pokémon TCG Pocket o Pokémon TCG Live).
+
+1. Repositorios de Simon Goellner (creador del efecto original simey.me):
+   Él aloja muchísimos recursos optimizados en su red de distribución de contenido (CDN) y repositorios de GitHub.
+   * Colección de brillos/foils generales:
+     https://poke-holo.b-cdn.net/foils/
+   * Ejemplos de foils clásicos listos para usar:
+     - Estrellas holográficas clásicas de fondo:
+       `url(https://poke-holo.b-cdn.net/foils/151/birthday-holo-dank-2.webp)`
+     - Patrón de chispas/sparkles de alta calidad:
+       `url(pokemon/sparkles.webp)` (incluido en tu carpeta de recursos)
+
+2. Datamining de Pokémon TCG Pocket y Live:
+   En servidores de Discord de datamining de Pokémon o en GitHub (buscando términos como "pokemon-tcg-assets" o "tcg-pocket-foils"), los usuarios suben carpetas organizadas con:
+   - `std` o `base`: La carta limpia sin brillo.
+   - `foil`: El mapa de escala de grises que indica dónde debe brillar más fuerte (las zonas claras brillan, las oscuras no).
+   - `etch`: El mapa de relieve o rugosidad que genera las texturas táctiles del "Masterball" o los grabados dorados de las cartas raras.
+
+
+MÉTODO B: CREARLAS TÚ MISMO CON PHOTOSHOP O PHOTOPEA (Si ya tienes la carta base)
+---------------------------------------------------------------------------------
+Si tienes la imagen de una carta Pokémon y quieres que brille solo una parte (por ejemplo, el Pokémon en sí o el fondo), debes crear una máscara tú mismo. Es muy sencillo:
+
+1. Abre la imagen de tu carta en un programa de edición (Photoshop, GIMP o Photopea.com).
+2. Crea una máscara de Luminosidad (Foil Mask):
+   - El componente `<hover-tilt>` en modo `luminance` hace que todo lo que esté en BLANCO brille con intensidad, y todo lo que esté en NEGRO permanezca opaco y sin brillo. Los grises brillan a medias.
+   - Por lo tanto, selecciona el fondo o el Pokémon, píntalo de blanco puro, y pinta el resto de la carta de negro.
+   - Guarda esa imagen en blanco y negro como PNG o WebP. Esa será tu máscara: `glare-mask="url(mi-mascara-foil.webp)"` con `glare-mask-mode="luminance"`.
+3. Crea una máscara de Transparencia (Alpha Mask):
+   - Si prefieres usar transparencias, elimina el fondo de la carta y deja únicamente lo que quieres que brille. Guarda la imagen como PNG transparente.
+   - En tu código configuras `glare-mask-mode="alpha"`. El brillo solo se aplicará sobre las partes de la imagen que no sean transparentes.
+
+4. Crear texturas "Etch" o relieves (como el patrón Masterball de Umbreon):
+   - Para patrones geométricos (como el relieve de las Masterball), se utiliza una imagen en blanco y negro repetitiva con el icono de la Masterball.
+   - Al mezclar esta imagen usando el modo CSS `difference` con el degradado de iluminación dinámica, el navegador simula el sombreado en relieve en 3D en tiempo real (creando la ilusión de rugosidad física al mover la carta).
+
+¡En la carpeta "pack-cartas-efectos" que te he creado tienes listos todos los archivos, códigos y recursos de Umbreon y Lillie para que veas exactamente cómo se aplican!
+========================================================================
